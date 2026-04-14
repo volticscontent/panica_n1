@@ -69,8 +69,15 @@ export default function TrackingProvider({ children }: { children: React.ReactNo
         }
     };
 
-    // 3. Garante que Links de Checkout tenham o parâmetro ?cid= para Digistore
-    useEffect(() => {
+    document.addEventListener('click', handleClick);
+
+    return () => {
+        document.removeEventListener('click', handleClick);
+    };
+  }, []);
+
+  // 3. Garante que Links de Checkout tenham o parâmetro ?cid= para Digistore
+  useEffect(() => {
         const transformLinks = () => {
             const urlParams = new URLSearchParams(window.location.search);
             const clickId = urlParams.get('xcod') || urlParams.get('utm_source') || 'direct';

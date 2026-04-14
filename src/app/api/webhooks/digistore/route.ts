@@ -23,10 +23,6 @@ export async function GET(req: NextRequest) {
     return handleWebhook(req);
 }
 
-export async function GET(req: NextRequest) {
-    return handleWebhook(req);
-}
-
 async function handleWebhook(req: NextRequest) {
     try {
         const method = req.method;
