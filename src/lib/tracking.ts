@@ -101,6 +101,8 @@ export class TrackingService {
         },
         fbp: event.user.fbp || '',
         fbc: event.user.fbc || '',
+        pixelId: process.env.UTMIFY_PIXEL_ID || '', // Adicionado para identificação correta
+        pixel_id: process.env.UTMIFY_PIXEL_ID || '', // Algumas versões usam com underscore
         status: (event.eventName === 'Purchase' || event.eventName === 'VslView') ? 'approved' : 'pending',
         paymentMethod: 'credit_card',
         currency: event.currency || 'BRL'
