@@ -43,7 +43,7 @@ export default function Home() {
         <VSLPlayer />
 
         {/* Pricing Component Modularized (Gated) */}
-        <section id="gated-content" data-gate="15" className="hidden w-full transition-all duration-1000 ease-in-out">
+        <section id="gated-content" data-gate="2927" className="hidden w-full transition-all duration-1000 ease-in-out">
           <PricingCards />
         </section>
 

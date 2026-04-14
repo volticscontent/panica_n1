@@ -50,6 +50,22 @@ export default function TrackingProvider({ children }: { children: React.ReactNo
         
         if (link && (link.href.includes('checkout-ds24.com') || link.href.includes('digistore24.com'))) {
              sendEvent('InitiateCheckout');
+             
+             // Disparo híbrido (Browser Side) para melhor otimização
+             if (typeof window !== 'undefined') {
+                 // TikTok
+                 (window as any).ttq?.track('InitiateCheckout', {
+                     contents: [{
+                         content_id: 'glucovital_lp',
+                         content_type: 'product'
+                     }]
+                 });
+                 // Meta (Facebook)
+                 (window as any).fbq?.track('InitiateCheckout', {
+                     content_ids: ['glucovital_lp'],
+                     content_type: 'product'
+                 });
+             }
         }
     };
 
