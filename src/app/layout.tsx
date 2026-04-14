@@ -26,10 +26,10 @@ export default function RootLayout({
         />
         
         {/* TikTok Pixel fornecido injetado exatamente segundo instruções da UTMify */}
-        {process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID && (
+        {process.env.NEXT_PUBLIC_UTMIFY_TIKTOK_PIXEL_ID && (
           <Script id="tiktok-pixel" strategy="afterInteractive" dangerouslySetInnerHTML={{
             __html: `
-              window.tikTokPixelId = "${process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID}";
+              window.tikTokPixelId = "${process.env.NEXT_PUBLIC_UTMIFY_TIKTOK_PIXEL_ID}";
               var a = document.createElement("script");
               a.setAttribute("async", "");
               a.setAttribute("defer", "");

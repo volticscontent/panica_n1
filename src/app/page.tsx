@@ -26,7 +26,7 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-8 flex flex-col gap-8">
-        
+
         {/* Headline Header */}
         <section className="w-full bg-neutral-100 py-6">
           <div className="max-w-6xl mx-auto px-4">
@@ -43,7 +43,7 @@ export default function Home() {
         <VSLPlayer />
 
         {/* Pricing Component Modularized (Gated) */}
-        <section id="gated-content" data-gate="2927" className="hidden w-full transition-all duration-1000 ease-in-out">
+        <section id="gated-content" data-gate="15" className="hidden w-full transition-all duration-1000 ease-in-out">
           <PricingCards />
         </section>
 
