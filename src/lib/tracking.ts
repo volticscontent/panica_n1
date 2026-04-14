@@ -119,13 +119,14 @@ export class TrackingService {
 
       if (!response.ok) {
         const errorData = await response.text();
-        throw new Error(`UTMify API Error: ${response.status} - ${errorData}`);
+        console.error(`[TrackingService] UTMify API Error: Status ${response.status}`, errorData);
+        return;
       }
 
       console.log(`[TrackingService] Postback ${event.eventName} enviado com sucesso.`);
       
     } catch (error: any) {
-      console.error(`[TrackingService] Erro no Postback:`, error.message);
+      console.error(`[TrackingService] Erro fatal no Postback:`, error.message);
     }
   }
 }
