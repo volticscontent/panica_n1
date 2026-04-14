@@ -58,62 +58,76 @@ export class TrackingService {
   }
 
   /**
-   * Envia o Postback para a UTMify (S2S)
+   * Envia o Postback para a UTMify (S2S) seguindo o padrão PerfumesUK
    */
   public static async dispatchEvent(event: TrackingEvent) {
     try {
       const utmifyEndpoint = process.env.UTMIFY_API_URL || 'https://api.utmify.com.br/api-credentials/orders';
       const apiToken = process.env.UTM_API_TOKEN || process.env.UTMIFY_API_TOKEN;
+      const pixelId = process.env.UTMIFY_PIXEL_ID;
 
       if (!apiToken) {
-        console.warn('[TrackingService] UTMIFY_API_TOKEN não configurado no servidor.');
+        console.warn('[TrackingService] UTMIFY_API_TOKEN não configurado.');
         return;
       }
 
-      console.log(`[TrackingService] Iniciando Postback S2S: ${event.eventName}`, { transactionId: event.transactionId });
+      const now = new Date().toISOString();
+      // Converte o valor original para centavos (Como vem em Euro, apenas multiplicamos por 100)
+      const priceInCents = Math.round((event.value || 0) * 100);
 
       const payload = {
         orderId: event.transactionId || `evt_${Date.now()}`,
+        platform: 'digistore',
+        paymentMethod: 'credit_card',
+        status: (event.eventName === 'Purchase' || event.eventName === 'VslView') ? 'approved' : 'pending',
+        createdAt: now,
+        approvedDate: now,
+        currency: event.currency || 'EUR',
+        pixelId: pixelId || '',
+        pixel_id: pixelId || '',
         customer: {
-          email: event.user.email || '',
-          phone: event.user.phone || '',
-          firstName: event.user.firstName || '',
-          lastName: event.user.lastName || '',
-          ip: event.user.ip || '',
-          userAgent: event.user.userAgent || ''
+          name: `${event.user.firstName || 'Comprador'} ${event.user.lastName || 'Teste'}`.trim(),
+          email: event.user.email || 'teste@utmify.com.br',
+          phone: event.user.phone || '00000000000',
+          document: null
         },
-        products: [
-          {
-            id: event.productId || 'primary',
-            name: 'Product',
-            price: event.value || 0
-          }
-        ],
         trackingParameters: {
-          src: event.utm.src || '',
-          sck: event.utm.sck || '',
           utm_source: event.utm.utm_source || '',
           utm_medium: event.utm.utm_medium || '',
           utm_campaign: event.utm.utm_campaign || '',
           utm_content: event.utm.utm_content || '',
           utm_term: event.utm.utm_term || '',
+          src: event.utm.src || '',
+          sck: event.utm.sck || '',
           xcod: event.utm.xcod || ''
         },
+        commission: {
+          totalPriceInCents: priceInCents,
+          gatewayFeeInCents: Math.round(priceInCents * 0.05), // Estimativa 5%
+          userCommissionInCents: priceInCents - Math.round(priceInCents * 0.05)
+        },
+        products: [
+          {
+            id: event.productId || 'default',
+            planId: `plan_${event.productId || 'default'}`,
+            planName: 'Product',
+            name: 'Nutra Product',
+            quantity: 1,
+            priceInCents: priceInCents
+          }
+        ],
         fbp: event.user.fbp || '',
-        fbc: event.user.fbc || '',
-        pixelId: process.env.UTMIFY_PIXEL_ID || '', // Adicionado para identificação correta
-        pixel_id: process.env.UTMIFY_PIXEL_ID || '', // Algumas versões usam com underscore
-        status: (event.eventName === 'Purchase' || event.eventName === 'VslView') ? 'approved' : 'pending',
-        paymentMethod: 'credit_card',
-        currency: event.currency || 'BRL'
+        fbc: event.user.fbc || ''
       };
 
-      console.log(`[TrackingService] Payload enviado para UTMify:`, JSON.stringify(payload, null, 2));
+      console.log(`[TrackingService] Enviando S2S (Padrao PerfumesUK) - Evento: ${event.eventName}`);
+      console.log(`[TrackingService] Payload:`, JSON.stringify(payload, null, 2));
 
       const response = await fetch(utmifyEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'User-Agent': 'NutraVercel-Tracking/1.0',
           'x-api-token': apiToken
         },
         body: JSON.stringify(payload)
@@ -121,14 +135,14 @@ export class TrackingService {
 
       if (!response.ok) {
         const errorData = await response.text();
-        console.error(`[TrackingService] UTMify API Error: Status ${response.status}`, errorData);
+        console.error(`[TrackingService] Erro retornado pela UTMify: Status ${response.status}`, errorData);
         return;
       }
 
-      console.log(`[TrackingService] Postback ${event.eventName} enviado com sucesso.`);
+      console.log(`[TrackingService] Postback ${event.eventName} marcado com sucesso na UTMify (EUR).`);
       
     } catch (error: any) {
-      console.error(`[TrackingService] Erro fatal no Postback:`, error.message);
+      console.error(`[TrackingService] Erro fatal no Postback S2S:`, error.message);
     }
   }
 }
