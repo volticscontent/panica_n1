@@ -108,6 +108,8 @@ export class TrackingService {
         currency: event.currency || 'BRL'
       };
 
+      console.log(`[TrackingService] Payload enviado para UTMify:`, JSON.stringify(payload, null, 2));
+
       const response = await fetch(utmifyEndpoint, {
         method: 'POST',
         headers: {

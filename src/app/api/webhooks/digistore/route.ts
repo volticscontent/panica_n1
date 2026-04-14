@@ -47,7 +47,7 @@ async function handleWebhook(req: NextRequest) {
             payload = Object.fromEntries(searchParams.entries());
         }
 
-        console.log(`[Digistore Webhook] ${method} recebido:`, payload.order_id || payload.click_id || 'Event');
+        console.log(`[Digistore Webhook] ${method} recebido. Payload:`, payload);
 
         // Mapeamento de Status
         const digiEvent = payload.event || payload.status || 'payment';
@@ -60,7 +60,7 @@ async function handleWebhook(req: NextRequest) {
         const user: AdvancedMatching = {
             ip: req.headers.get('x-forwarded-for') || '',
             userAgent: req.headers.get('user-agent') || '',
-            email: payload.buyer_email || payload.email || '',
+            email: payload.buyer_email || payload.email || payload.email_address || '',
             firstName: payload.buyer_first_name || payload.first_name || '',
             lastName: payload.buyer_last_name || payload.last_name || '',
             phone: payload.buyer_phone || payload.phone || '',
