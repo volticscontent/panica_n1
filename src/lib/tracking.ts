@@ -58,33 +58,34 @@ export class TrackingService {
   }
 
   /**
-   * Envia o Postback para a UTMify (S2S) seguindo o padrão PerfumesUK
+   * Envia o Postback para a UTMify (S2S) seguindo rigorosamente a documentação oficial
    */
   public static async dispatchEvent(event: TrackingEvent) {
     try {
       const utmifyEndpoint = process.env.UTMIFY_API_URL || 'https://api.utmify.com.br/api-credentials/orders';
       const apiToken = process.env.UTM_API_TOKEN || process.env.UTMIFY_API_TOKEN;
-      const pixelId = process.env.UTMIFY_PIXEL_ID;
 
       if (!apiToken) {
         console.warn('[TrackingService] UTMIFY_API_TOKEN não configurado.');
         return;
       }
 
-      const now = new Date().toISOString();
-      // Converte o valor original para centavos (Como vem em Euro, apenas multiplicamos por 100)
+      // Formatando data conforme exigido: YYYY-MM-DD HH:MM:SS
+      const formatDate = (date: Date) => {
+        return date.toISOString().replace('T', ' ').split('.')[0];
+      };
+
+      const now = new Date();
+      const formattedDate = formatDate(now);
       const priceInCents = Math.round((event.value || 0) * 100);
 
       const payload = {
         orderId: event.transactionId || `evt_${Date.now()}`,
         platform: 'digistore',
         paymentMethod: 'credit_card',
-        status: (event.eventName === 'Purchase' || event.eventName === 'VslView') ? 'approved' : 'pending',
-        createdAt: now,
-        approvedDate: now,
-        currency: event.currency || 'EUR',
-        pixelId: pixelId || '',
-        pixel_id: pixelId || '',
+        status: (event.eventName === 'Purchase' || event.eventName === 'VslView') ? 'paid' : 'waiting_payment',
+        createdAt: formattedDate,
+        approvedDate: formattedDate,
         customer: {
           name: `${event.user.firstName || 'Comprador'} ${event.user.lastName || 'Teste'}`.trim(),
           email: event.user.email || 'teste@utmify.com.br',
@@ -103,31 +104,30 @@ export class TrackingService {
         },
         commission: {
           totalPriceInCents: priceInCents,
-          gatewayFeeInCents: Math.round(priceInCents * 0.05), // Estimativa 5%
-          userCommissionInCents: priceInCents - Math.round(priceInCents * 0.05)
+          gatewayFeeInCents: 0,
+          userCommissionInCents: priceInCents,
+          currency: event.currency || 'EUR'
         },
         products: [
           {
             id: event.productId || 'default',
             planId: `plan_${event.productId || 'default'}`,
-            planName: 'Product',
+            planName: 'Nutra Product',
             name: 'Nutra Product',
             quantity: 1,
             priceInCents: priceInCents
           }
-        ],
-        fbp: event.user.fbp || '',
-        fbc: event.user.fbc || ''
+        ]
       };
 
-      console.log(`[TrackingService] Enviando S2S (Padrao PerfumesUK) - Evento: ${event.eventName}`);
-      console.log(`[TrackingService] Payload:`, JSON.stringify(payload, null, 2));
+      console.log(`[TrackingService] Enviando S2S Oficial - ID: ${payload.orderId}`);
+      console.log(`[TrackingService] Dados:`, JSON.stringify(payload, null, 2));
 
       const response = await fetch(utmifyEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'User-Agent': 'NutraVercel-Tracking/1.0',
+          'User-Agent': 'NutraVSA-Tracking/1.0',
           'x-api-token': apiToken
         },
         body: JSON.stringify(payload)
@@ -135,14 +135,14 @@ export class TrackingService {
 
       if (!response.ok) {
         const errorData = await response.text();
-        console.error(`[TrackingService] Erro retornado pela UTMify: Status ${response.status}`, errorData);
+        console.error(`[TrackingService] API UTMify recusou: ${response.status}`, errorData);
         return;
       }
 
-      console.log(`[TrackingService] Postback ${event.eventName} marcado com sucesso na UTMify (EUR).`);
+      console.log(`[TrackingService] Venda em EURO marcada com sucesso!`);
       
     } catch (error: any) {
-      console.error(`[TrackingService] Erro fatal no Postback S2S:`, error.message);
+      console.error(`[TrackingService] Erro fatal S2S:`, error.message);
     }
   }
 }
