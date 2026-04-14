@@ -87,9 +87,9 @@ export class TrackingService {
         createdAt: formattedDate,
         approvedDate: formattedDate,
         customer: {
-          name: `${event.user.firstName || 'Comprador'} ${event.user.lastName || 'Teste'}`.trim(),
-          email: event.user.email || 'teste@utmify.com.br',
-          phone: event.user.phone || '00000000000',
+          name: `${event.user.firstName || ''} ${event.user.lastName || ''}`.trim() || 'Customer',
+          email: event.user.email || '',
+          phone: event.user.phone || '',
           document: null
         },
         trackingParameters: {

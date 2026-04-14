@@ -56,11 +56,11 @@ async function handleWebhook(req: NextRequest) {
         const user: AdvancedMatching = {
             ip: req.headers.get('x-forwarded-for') || '',
             userAgent: req.headers.get('user-agent') || '',
-            email: payload.buyer_email || payload.email || payload.email_address || 'teste@utmify.com.br',
-            firstName: payload.buyer_first_name || payload.first_name || 'Comprador',
-            lastName: payload.buyer_last_name || payload.last_name || 'Teste',
-            phone: payload.buyer_phone || payload.phone || '00000000000',
-            country: payload.buyer_country || payload.country || 'BR',
+            email: payload.buyer_email || payload.email || payload.email_address || '',
+            firstName: payload.buyer_first_name || payload.first_name || '',
+            lastName: payload.buyer_last_name || payload.last_name || '',
+            phone: payload.buyer_phone || payload.phone || '',
+            country: payload.buyer_country || payload.country || '',
         };
 
         // Tratamento de UTMs e Identificadores (xcod/cid)
