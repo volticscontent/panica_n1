@@ -69,12 +69,28 @@ export default function TrackingProvider({ children }: { children: React.ReactNo
         }
     };
 
-    document.addEventListener('click', handleClick);
+    // 3. Garante que Links de Checkout tenham o parâmetro ?cid= para Digistore
+    useEffect(() => {
+        const transformLinks = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const clickId = urlParams.get('xcod') || urlParams.get('utm_source') || 'direct';
+            
+            const links = document.querySelectorAll('a');
+            links.forEach(link => {
+                if (link.href.includes('checkout-ds24.com') || link.href.includes('digistore24.com')) {
+                    if (!link.href.includes('cid=')) {
+                        const separator = link.href.includes('?') ? '&' : '?';
+                        link.href += `${separator}cid=${clickId}`;
+                    }
+                }
+            });
+        };
 
-    return () => {
-        document.removeEventListener('click', handleClick);
-    };
-  }, []);
+        // Roda ao carregar e após um pequeno delay para garantir que scripts externos carregaram
+        transformLinks();
+        const timer = setTimeout(transformLinks, 2000);
+        return () => clearTimeout(timer);
+    }, []);
 
-  return <>{children}</>;
+    return <>{children}</>;
 }

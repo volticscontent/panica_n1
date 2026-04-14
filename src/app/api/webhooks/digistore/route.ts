@@ -1,11 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TrackingService, TrackingEvent, AdvancedMatching } from '@/lib/tracking';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Webhook / Postback Digistore24 para Vercel
  * Suporta POST (IPN padrão) e GET (parâmetros via URL)
  */
 export async function POST(req: NextRequest) {
+    console.log('[Webhook POST] Verificando Env:', { 
+        hasToken: !!process.env.UTMIFY_API_TOKEN,
+        hasPixelId: !!process.env.UTMIFY_PIXEL_ID 
+    });
+    return handleWebhook(req);
+}
+
+export async function GET(req: NextRequest) {
+    console.log('[Webhook GET] Verificando Env:', { 
+        hasToken: !!process.env.UTMIFY_API_TOKEN,
+        hasPixelId: !!process.env.UTMIFY_PIXEL_ID 
+    });
     return handleWebhook(req);
 }
 
