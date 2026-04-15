@@ -19,9 +19,9 @@ export default function VSLPlayer() {
     if (containerRef.current && !document.getElementById("vturb-player-js")) {
       const script = document.createElement("script");
       script.id = "vturb-player-js";
-      script.src = "/js/player.js";
+      script.src = "https://scripts.converteai.net/edb83c2d-fdbb-4547-8abd-203223d1fc8d/players/69dd5ac800f23bcc184f5800/v4/player.js";
       script.async = true;
-      containerRef.current.appendChild(script);
+      document.head.appendChild(script);
     }
   }, []);
 
@@ -31,7 +31,7 @@ export default function VSLPlayer() {
       {/* Container que segura o Elemento VTurb e o Script nativo injetado pelo useEffect */}
       <div ref={containerRef}>
         <vturb-smartplayer 
-          id="vid-69c5a58194d36cec11723824" 
+          id="vid-69dd5ac800f23bcc184f5800" 
           style={{ display: "block", margin: "0 auto", width: "100%" }} 
         />
       </div>
