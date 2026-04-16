@@ -26,7 +26,7 @@ export default function TrackingProvider({ children }: { children: React.ReactNo
           fbp: getCookie('_fbp'),
           fbc: getCookie('_fbc'),
           utms: window.location.search,
-        };''
+        };
 
         await fetch(trackingApiUrl, {
           method: 'POST',
@@ -54,14 +54,14 @@ export default function TrackingProvider({ children }: { children: React.ReactNo
              // Disparo híbrido (Browser Side) para melhor otimização
              if (typeof window !== 'undefined') {
                  // TikTok
-                (window as any).ttq?.track?.('InitiateCheckout', {
+                 (window as any).ttq?.track('InitiateCheckout', {
                      contents: [{
                          content_id: 'glucovital_lp',
                          content_type: 'product'
                      }]
                  });
                  // Meta (Facebook)
-                (window as any).fbq?.track?.('InitiateCheckout', {
+                 (window as any).fbq?.track('InitiateCheckout', {
                      content_ids: ['glucovital_lp'],
                      content_type: 'product'
                  });
@@ -76,81 +76,28 @@ export default function TrackingProvider({ children }: { children: React.ReactNo
     };
   }, []);
 
-  // 3. Garante que links de checkout levem os parâmetros de rastreio
+  // 3. Garante que Links de Checkout tenham o parâmetro ?cid= para Digistore
   useEffect(() => {
-    const transformLinks = () => {
-      const pageParams = new URLSearchParams(window.location.search);
-      const aliases: Record<string, string[]> = {
-        campaignkey: ["campaignKey"],
-        trackingkey: ["trackingKey"],
-        utm_source: ["utmSource"],
-        utm_medium: ["utmMedium"],
-        utm_campaign: ["utmCampaign"],
-        utm_term: ["utmTerm"],
-        utm_content: ["utmContent"],
-      };
-      const passthroughKeys = [
-        "campaignkey",
-        "trackingkey",
-        "sid1",
-        "sid2",
-        "sid3",
-        "sid4",
-        "sid5",
-        "utm_source",
-        "utm_medium",
-        "utm_campaign",
-        "utm_term",
-        "utm_content",
-      ];
-      const clickId =
-        pageParams.get("cid") ||
-        pageParams.get("xcod") ||
-        pageParams.get("trackingkey") ||
-        pageParams.get("trackingKey") ||
-        pageParams.get("utm_source") ||
-        pageParams.get("utmSource") ||
-        "direct";
+        const transformLinks = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const clickId = urlParams.get('xcod') || urlParams.get('utm_source') || 'direct';
+            
+            const links = document.querySelectorAll('a');
+            links.forEach(link => {
+                if (link.href.includes('checkout-ds24.com') || link.href.includes('digistore24.com')) {
+                    if (!link.href.includes('cid=')) {
+                        const separator = link.href.includes('?') ? '&' : '?';
+                        link.href += `${separator}cid=${clickId}`;
+                    }
+                }
+            });
+        };
 
-      const links = document.querySelectorAll<HTMLAnchorElement>("a[href]");
-      links.forEach((link) => {
-        try {
-          const checkoutUrl = new URL(link.href, window.location.origin);
-          const isDigistore =
-            checkoutUrl.hostname.includes("checkout-ds24.com") ||
-            checkoutUrl.hostname.includes("digistore24.com");
-
-          if (!isDigistore) return;
-
-          if (!checkoutUrl.searchParams.get("cid")) {
-            checkoutUrl.searchParams.set("cid", clickId);
-          }
-
-          passthroughKeys.forEach((key) => {
-            if (checkoutUrl.searchParams.get(key)) return;
-
-            const fromPage =
-              pageParams.get(key) ||
-              aliases[key]?.map((alias) => pageParams.get(alias)).find(Boolean) ||
-              "";
-
-            if (fromPage) {
-              checkoutUrl.searchParams.set(key, fromPage);
-            }
-          });
-
-          link.href = checkoutUrl.toString();
-        } catch {
-          // Ignora links inválidos
-        }
-      });
-    };
-
-    // Roda ao carregar e após um pequeno delay para garantir que scripts externos carregaram
-    transformLinks();
-    const timer = setTimeout(transformLinks, 2000);
-    return () => clearTimeout(timer);
-  }, []);
+        // Roda ao carregar e após um pequeno delay para garantir que scripts externos carregaram
+        transformLinks();
+        const timer = setTimeout(transformLinks, 2000);
+        return () => clearTimeout(timer);
+    }, []);
 
     return <>{children}</>;
 }
