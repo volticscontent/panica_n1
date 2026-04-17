@@ -31,7 +31,7 @@ export default function VSLPlayer() {
       {/* Container que segura o Elemento VTurb e o Script nativo injetado pelo useEffect */}
       <div ref={containerRef}>
         <vturb-smartplayer
-          id="vid-69dd5ac800f23bcc184f5800"
+          id="vid-69e160cc5cda5b480833350c"
           style={{ display: "block", margin: "0 auto", width: "100%" }}
         />
       </div>
